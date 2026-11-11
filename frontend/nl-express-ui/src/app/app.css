@@ -1,0 +1,77 @@
+.dashboard-container {
+  max-width: 800px;
+  margin: 2rem auto;
+  font-family: system-ui, sans-serif;
+}
+
+.dashboard-title {
+  margin-bottom: 1.5rem;
+}
+
+.dispatch-form {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
+}
+
+.form-field--manifest {
+  flex: 1;
+}
+
+.form-field--postal {
+  width: 140px;
+}
+
+.dispatch-btn {
+  height: 56px;
+}
+
+.reset-row {
+  margin-top: 0.25rem;
+  margin-bottom: 1.5rem;
+}
+
+.btn--reset{
+    width: 40%;
+}
+
+.error-banner {
+  color: #d32f2f;
+  background-color: #ffebee;
+  padding: 0.75rem;
+  border-radius: 4px;
+  margin-bottom: 1.5rem;
+}
+
+/* Live Deliveries Table */
+.deliveries-table {
+  width: 100%;
+  border-collapse: collapse;
+  text-align: left;
+}
+
+.table-header-row {
+  border-bottom: 2px solid #ccc;
+}
+
+.table-body-row {
+  border-bottom: 1px solid #eee;
+}
+
+.table-cell {
+  padding: 0.75rem;
+}
+
+/* Live Status Badges */
+.status-badge {
+  font-weight: bold;
+  color: gray;
+}
+
+.status-badge--intransit {
+  color: orange;
+}
+
+.status-badge--delivered {
+  color: green;
+}

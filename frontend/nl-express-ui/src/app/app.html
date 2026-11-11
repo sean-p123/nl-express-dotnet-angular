@@ -1,33 +1,75 @@
-<div style="max-width: 800px; margin: 2rem auto; font-family: system-ui, sans-serif;">
-  <h1>NL-Express Real-Time Logistics</h1>
+<div class="dashboard-container">
+  <h1 class="dashboard-title">NL-Express Real-Time Logistics</h1>
 
   <!-- Form to Dispatch a New Package -->
-  <form (ngSubmit)="addPackage()" style="display: flex; gap: 0.5rem; margin-bottom: 2rem;">
-    <input matInput [(ngModel)]="manifest" name="manifest" placeholder="Package (e.g. Stroopwafels)" required style="padding: 0.5rem; flex: 1;" />
-    <input [(ngModel)]="city" name="city" placeholder="City (e.g. Den Haag)" required style="padding: 0.5rem;" />
-    <input [(ngModel)]="postalCode" name="postalCode" placeholder="Postal (e.g. 2511 AA)" required style="padding: 0.5rem; width: 120px;" />
-    <button type="submit" style="padding: 0.5rem 1rem; cursor: pointer;">Dispatch</button>
-  </form>
-      <button matButton
-      (click)="resetData()" style="padding: 0.5rem 1rem; width: 100%; cursor: pointer; margin-bottom: 2rem;">Reset Data</button>
-  <!-- Live Deliveries Table -->
-  <table style="width: 100%; border-collapse: collapse; text-align: left;">
+  <div class="controls-section">
+    <form [formGroup]="dispatchForm" (ngSubmit)="addPackage()" class="dispatch-form">
+      <mat-form-field appearance="outline" class="form-field--manifest">
+        <mat-label>Package</mat-label>
+        <input matInput formControlName="manifest" placeholder="e.g. Stroopwafels" />
+        @if (dispatchForm.controls.manifest.hasError('required')) {
+          <mat-error>Package manifest is required</mat-error>
+        }
+      </mat-form-field>
+
+      <mat-form-field appearance="outline">
+        <mat-label>City</mat-label>
+        <input matInput formControlName="city" placeholder="e.g. Den Haag" />
+        @if (dispatchForm.controls.city.hasError('required')) {
+          <mat-error>City is required</mat-error>
+        }
+      </mat-form-field>
+
+      <mat-form-field appearance="outline" class="form-field--postal">
+        <mat-label>Postal Code</mat-label>
+        <input matInput formControlName="postalCode" placeholder="e.g. 2511 AA" />
+        @if (dispatchForm.controls.postalCode.hasError('required')) {
+          <mat-error>Postal code is required</mat-error>
+        }
+        @if (dispatchForm.controls.postalCode.hasError('pattern')) {
+          <mat-error>Format: 1012 JS</mat-error>
+        }
+      </mat-form-field>
+
+      <button matButton="filled" type="submit" [disabled]="dispatchForm.invalid" class="dispatch-btn">
+        Dispatch
+      </button>
+    </form>
+
+    <div class="reset-row">
+      <button matButton="outlined" type="button" (click)="resetData()" class="btn--reset">
+        Reset Table Data
+      </button>
+    </div>
+
+    @if (errorMessage()) {
+      <p class="error-banner">
+        Error from server: {{ errorMessage() }}
+      </p>
+    }
+  </div>
+
+  <table class="deliveries-table">
     <thead>
-      <tr style="border-bottom: 2px solid #ccc;">
-        <th style="padding: 0.75rem;">Manifest</th>
-        <th style="padding: 0.75rem;">Destination</th>
-        <th style="padding: 0.75rem;">Postal Code</th>
-        <th style="padding: 0.75rem;">Live Status</th>
+      <tr class="table-header-row">
+        <th class="table-cell">Manifest</th>
+        <th class="table-cell">Destination</th>
+        <th class="table-cell">Postal Code</th>
+        <th class="table-cell">Live Status</th>
       </tr>
     </thead>
     <tbody>
       @for (job of deliveries(); track job.id) {
-        <tr style="border-bottom: 1px solid #eee;">
-          <td style="padding: 0.75rem;">{{ job.packageManifest }}</td>
-          <td style="padding: 0.75rem;">{{ job.destinationCity }}</td>
-          <td style="padding: 0.75rem;">{{ job.postalCode }}</td>
-          <td style="padding: 0.75rem;">
-            <span [style.color]="getStatusColor(job.status)" style="font-weight: bold;">
+        <tr class="table-body-row">
+          <td class="table-cell">{{ job.packageManifest }}</td>
+          <td class="table-cell">{{ job.destinationCity }}</td>
+          <td class="table-cell">{{ job.postalCode }}</td>
+          <td class="table-cell">
+            <span
+              class="status-badge"
+              [class.status-badge--delivered]="job.status === 'Delivered'"
+              [class.status-badge--intransit]="job.status === 'InTransit'"
+            >
               {{ job.status }}
             </span>
           </td>

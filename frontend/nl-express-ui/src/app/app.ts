@@ -1,22 +1,41 @@
 import { Component, OnInit, inject, signal } from '@angular/core';
-import { FormsModule } from '@angular/forms';
+import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
+import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatInputModule } from '@angular/material/input';
+import { MatButtonModule } from '@angular/material/button';
 import { DeliveryService, DeliveryJob } from './delivery.service';
 
 @Component({
   selector: 'app-root',
-  imports: [FormsModule],
+  imports: [
+    ReactiveFormsModule,
+    MatFormFieldModule,
+    MatInputModule,
+    MatButtonModule
+  ],
   templateUrl: './app.html',
-  styleUrl: './app.css',
-  standalone: true
+  styleUrl: './app.css'
 })
 export class App implements OnInit {
   private deliveryService = inject(DeliveryService);
+  private fb = inject(FormBuilder);
 
   deliveries = signal<DeliveryJob[]>([]);
+  errorMessage = signal<string | null>(null);
 
-  manifest = '';
-  city = '';
-  postalCode = '';
+  //Add frontend form validation to match the backend
+  dispatchForm = this.fb.nonNullable.group({
+    manifest: ['', [Validators.required, Validators.maxLength(100)]],
+    city: ['', [Validators.required]],
+    postalCode: ['', [
+      Validators.required,
+      Validators.pattern(/^[1-9][0-9]{3}\s?[A-Za-z]{2}$/)
+    ]]
+  });
+  
+  manifest: string = '';
+  city: string = '';
+  postalCode: string = '';
 
   ngOnInit(): void {
     this.loadDeliveries();
@@ -46,24 +65,39 @@ export class App implements OnInit {
   }
 
   addPackage(): void {
-    if (!this.manifest || !this.city || !this.postalCode) return;
+    // Prevent API call if frontend validation fails
+    if(this.dispatchForm.invalid){
+      this.dispatchForm.markAllAsTouched();
+      return;
+    }
+
+    this.errorMessage.set(null);
+    const formValues = this.dispatchForm.getRawValue();
 
     const newJob: DeliveryJob = {
-      packageManifest: this.manifest,
-      destinationCity: this.city,
-      postalCode: this.postalCode
+      packageManifest: formValues.manifest,
+      destinationCity: formValues.city,
+      postalCode: formValues.postalCode.trim().toUpperCase()
     };
 
-    this.deliveryService.createDelivery(newJob).subscribe(createdJob => {
+    this.deliveryService.createDelivery(newJob).subscribe({
+      next: createdJob => {
       this.deliveries.update(list => [createdJob, ...list]);
-      this.manifest = '';
-      this.city = '';
-      this.postalCode = '';
-    });
+      this.dispatchForm.reset();
+    },
+    error: err => {
+      const validationErrors = err.error?.errors;
+          if (validationErrors) {
+            const firstKey = Object.keys(validationErrors)[0];
+            this.errorMessage.set(validationErrors[firstKey][0]);
+          } else {
+            this.errorMessage.set('Failed to dispatch package.');
+          }
+    }});
   }
 
   resetData(){
-    console.log("Reset button clicked");
+    this.errorMessage.set(null);
     this.deliveryService.resetData().subscribe(freshlist => {
       this.deliveries.set(freshlist);
     });
