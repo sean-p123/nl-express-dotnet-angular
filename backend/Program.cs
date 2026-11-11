@@ -1,3 +1,5 @@
+using System.ComponentModel.DataAnnotations;
+using FluentValidation; 
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
 using NLExpressBackend;
@@ -19,6 +21,8 @@ builder.Services.AddCors(options =>
         .AllowCredentials(); // cruicial for SignalR!
     });
 });
+
+builder.Services.AddValidatorsFromAssemblyContaining<Program>();
 
 builder.Services.AddHostedService<DeliverySimulationWorker>();
 
@@ -46,8 +50,20 @@ app.UseCors();
 app.MapGet("/api/deliveries", async (AppDbContext db) => 
     await db.Deliveries.OrderByDescending(order => order.CreatedAt).ToListAsync());
 
-app.MapPost("/api/deliveries", async (DeliveryJob newJob, AppDbContext db) =>
+app.MapPost("/api/deliveries", async (
+    DeliveryJob newJob, 
+    IValidator<DeliveryJob> validator,
+    AppDbContext db
+    ) =>
 {
+    var validationResult = await validator.ValidateAsync(newJob);
+    if (!validationResult.IsValid)
+    {
+        // Returns a standardized HTTP 400 ValidationProblem JSON response
+        return Results.ValidationProblem(validationResult.ToDictionary());
+    }
+
+    newJob.PostalCode = newJob.PostalCode.Trim().ToUpper();
     newJob.Status = "Pending";
     newJob.CreatedAt = DateTime.UtcNow;
 
