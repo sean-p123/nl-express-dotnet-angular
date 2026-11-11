@@ -1,0 +1,17 @@
+# .NET Build & Database Artifacts
+**/bin/
+**/obj/
+**/.vs/
+**/*.user
+**/*.db
+**/*.db-shm
+**/*.db-wal
+
+# Angular / Node Artifacts
+**/node_modules/
+**/.angular/
+**/dist/
+
+# OS & Editor Files
+.DS_Store
+Thumbs.db
