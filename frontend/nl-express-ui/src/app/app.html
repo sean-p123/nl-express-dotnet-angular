@@ -1,0 +1,38 @@
+<div style="max-width: 800px; margin: 2rem auto; font-family: system-ui, sans-serif;">
+  <h1>NL-Express Real-Time Logistics</h1>
+
+  <!-- Form to Dispatch a New Package -->
+  <form (ngSubmit)="addPackage()" style="display: flex; gap: 0.5rem; margin-bottom: 2rem;">
+    <input matInput [(ngModel)]="manifest" name="manifest" placeholder="Package (e.g. Stroopwafels)" required style="padding: 0.5rem; flex: 1;" />
+    <input [(ngModel)]="city" name="city" placeholder="City (e.g. Den Haag)" required style="padding: 0.5rem;" />
+    <input [(ngModel)]="postalCode" name="postalCode" placeholder="Postal (e.g. 2511 AA)" required style="padding: 0.5rem; width: 120px;" />
+    <button type="submit" style="padding: 0.5rem 1rem; cursor: pointer;">Dispatch</button>
+  </form>
+      <button matButton
+      (click)="resetData()" style="padding: 0.5rem 1rem; width: 100%; cursor: pointer; margin-bottom: 2rem;">Reset Data</button>
+  <!-- Live Deliveries Table -->
+  <table style="width: 100%; border-collapse: collapse; text-align: left;">
+    <thead>
+      <tr style="border-bottom: 2px solid #ccc;">
+        <th style="padding: 0.75rem;">Manifest</th>
+        <th style="padding: 0.75rem;">Destination</th>
+        <th style="padding: 0.75rem;">Postal Code</th>
+        <th style="padding: 0.75rem;">Live Status</th>
+      </tr>
+    </thead>
+    <tbody>
+      @for (job of deliveries(); track job.id) {
+        <tr style="border-bottom: 1px solid #eee;">
+          <td style="padding: 0.75rem;">{{ job.packageManifest }}</td>
+          <td style="padding: 0.75rem;">{{ job.destinationCity }}</td>
+          <td style="padding: 0.75rem;">{{ job.postalCode }}</td>
+          <td style="padding: 0.75rem;">
+            <span [style.color]="getStatusColor(job.status)" style="font-weight: bold;">
+              {{ job.status }}
+            </span>
+          </td>
+        </tr>
+      }
+    </tbody>
+  </table>
+</div>
