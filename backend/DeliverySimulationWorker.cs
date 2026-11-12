@@ -56,10 +56,9 @@ public class DeliverySimulationWorker : BackgroundService
                 // 3. Query the SQLite "Deliveries" table asynchronously for the first "Pending" package.
                 // EF Core tracks this object in memory so it notices any property changes we make to it.
                 var pendingJob = await db.Deliveries.FirstOrDefaultAsync(delivery => delivery.Status == "Pending", stoppingToken);
-                _logger.LogInformation($"***logger: {pendingJob}***");
                 if (pendingJob != null)
                 {
-                    pendingJob.Status = "InTransit";
+                    pendingJob.AdvanceStatus();
 
                     // 4. SaveChangesAsync inspects all tracked objects, sees that Status changed, 
                     // generates a SQL "UPDATE Deliveries SET Status = 'InTransit'..." command, 
@@ -76,7 +75,7 @@ public class DeliverySimulationWorker : BackgroundService
             
                 if (inTransitJob != null)
                 {
-                    inTransitJob.Status = "Delivered";
+                    inTransitJob.AdvanceStatus();
 
                     await db.SaveChangesAsync(stoppingToken);
 
