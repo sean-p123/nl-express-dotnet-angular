@@ -39,12 +39,6 @@ export class App implements OnInit {
 
   ngOnInit(): void {
     this.loadDeliveries();
-
-    // Reload the full list whenever the backend restarts and SignalR reconnects
-    this.deliveryService.reconnected$.subscribe(()=> {
-      console.log("Reconnected!!")
-      this.loadDeliveries();
-    })
     
     // Handle status updates
     this.deliveryService.deliveryUpdated$.subscribe(updatedJob => {
