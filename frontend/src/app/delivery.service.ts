@@ -3,7 +3,6 @@ import { HttpClient } from '@angular/common/http';
 import * as signalR from '@microsoft/signalr';
 import { Observable, Subject } from 'rxjs';
 
-// Mirrors your C# DeliveryJob model
 export interface DeliveryJob {
   id?: string;
   packageManifest: string;
@@ -28,7 +27,6 @@ export class DeliveryService {
   private reconnectedSubject = new Subject<void>();
   private deliveryResetSubject = new Subject<DeliveryJob[]>();
 
-  // Expose an Observable stream for your component to subscribe to
   public deliveryUpdated$ = this.deliveryUpdatedSubject.asObservable();
   public reconnected$ = this.reconnectedSubject.asObservable();
   public deliveriesReset$ = this.deliveryResetSubject.asObservable();
@@ -43,12 +41,12 @@ export class DeliveryService {
     this.startConnection();
   }
 
-  // 2. Detect when SignalR reconnects after a backend restart
+  // Detect when SignalR reconnects after a backend restart
   private registerListeners(): void{
     // Listen for individual status updates
     this.hubConnection.on('DeliveryUpdated', (updatedJob: DeliveryJob) => {
         this.ngZone.run(()=> {
-            this.reconnectedSubject.next();
+            this.deliveryUpdatedSubject.next(updatedJob);
         });
     });
 
@@ -70,12 +68,10 @@ export class DeliveryService {
         }
   }
 
-  // Standard REST GET
   getDeliveries(): Observable<DeliveryJob[]> {
     return this.http.get<DeliveryJob[]>(this.apiUrl);
   }
 
-  // Standard REST POST
   createDelivery(job: DeliveryJob): Observable<DeliveryJob> {
     return this.http.post<DeliveryJob>(this.apiUrl, job);
   }
